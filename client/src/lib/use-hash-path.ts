@@ -1,21 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 
-// Custom hash-location hook for wouter that returns the PATH ONLY (query stripped).
-// The default wouter useHashLocation returns the full hash including "?query",
-// which breaks route matching for routes like /repair/track?number=JR-10287.
-// Pages read query params directly from window.location.hash, so stripping here
-// is safe and fixes route matching.
+// Custom hash-location hook for wouter.
+//
+// Returns the FULL hash location (path + query), e.g. "/repair/track?number=JR-10287".
+// Returning the full string (not just the path) means query-only changes — like
+// navigating from /finder to /finder?type=E-Bike — still trigger a re-render, which
+// pages need because they read query params directly from window.location.hash.
+//
+// Route matching is done manually in AppRouter by stripping the query, so query-bearing
+// paths match their route (wouter's built-in Route matching would fail on the query).
 export function useHashPath(): [string, (to: string) => void] {
-  const [path, setPath] = useState(() => {
-    const h = window.location.hash.replace(/^#/, "");
-    return (h.split("?")[0] || "/").replace(/\s+/g, "");
-  });
+  const get = () => window.location.hash.replace(/^#/, "") || "/";
+  const [loc, setLoc] = useState(get);
 
   useEffect(() => {
-    const onHash = () => {
-      const h = window.location.hash.replace(/^#/, "");
-      setPath((h.split("?")[0] || "/").replace(/\s+/g, ""));
-    };
+    const onHash = () => setLoc(get());
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -24,5 +23,5 @@ export function useHashPath(): [string, (to: string) => void] {
     window.location.hash = to.startsWith("#") ? to : to;
   }, []);
 
-  return [path, navigate];
+  return [loc, navigate];
 }

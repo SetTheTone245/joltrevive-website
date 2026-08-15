@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "wouter";
+import { Link } from "wouter";
 import {
   Star, ShoppingCart, Zap, Store, MessageSquare, ShieldCheck, Truck,
   CheckCircle2, ChevronRight, ArrowLeft, Ruler, Timer, Gauge, Factory, RotateCcw, Battery as BatteryIcon,
@@ -14,8 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatPrice, conditionLabel, conditionBadgeClass } from "@/lib/siteData";
 import { cn } from "@/lib/utils";
 
-export function ProductPage() {
-  const { id } = useParams<{ id: string }>();
+export function ProductPage({ id }: { id: string }) {
   const battery = getBatteryById(id);
   const { add } = useCart();
   const { toast } = useToast();
