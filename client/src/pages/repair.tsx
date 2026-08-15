@@ -75,7 +75,7 @@ export function RepairPage() {
 
       {/* Services */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <SectionHeading eyebrow="Services" title="Pick the service you need" description="Starting prices below. Final quotes are confirmed after a $49 diagnostic." />
+        <SectionHeading eyebrow="Services" title="Pick the service you need" description="Starting prices below. Final quotes are confirmed after an $80 diagnostic. Prices cover labor only — parts are billed separately." />
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s) => {
             const Icon = SERVICE_ICONS[s.icon] ?? Wrench;
@@ -92,6 +92,9 @@ export function RepairPage() {
                   <span className="font-display text-xl font-semibold text-primary">{formatPrice(s.startingPrice)}</span>
                   <Link href={`/appointments?service=${s.id}`}><Button variant="outline" size="sm" className="gap-1.5">Book <ArrowRight className="size-3.5" /></Button></Link>
                 </div>
+                <p className="mt-2 text-[11px] leading-snug text-muted-foreground" data-testid={`service-note-${s.id}`}>
+                  <span className="font-medium text-foreground/70">Labor only —</span> {s.priceNote.replace(/^Labor only\.\s*/, "")}
+                </p>
               </div>
             );
           })}

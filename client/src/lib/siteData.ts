@@ -6,6 +6,7 @@ export interface Service {
   id: string;
   name: string;
   startingPrice: number;
+  priceNote: string;
   blurb: string;
   icon: string;
   steps: string[];
@@ -15,7 +16,8 @@ export const SERVICES: Service[] = [
   {
     id: "diagnostic",
     name: "Diagnostic Services",
-    startingPrice: 49,
+    startingPrice: 80,
+    priceNote: "Labor only. Diagnostic fee credited toward repair if you proceed.",
     blurb: "Full battery health audit: cell voltage, capacity, internal resistance, and BMS fault scan.",
     icon: "stethoscope",
     steps: ["Receive battery", "Visual & connector inspection", "Cell-level voltage scan", "Capacity & IR test", "BMS fault code read", "Detailed report"],
@@ -24,6 +26,7 @@ export const SERVICES: Service[] = [
     id: "repair",
     name: "Battery Repair",
     startingPrice: 149,
+    priceNote: "Labor only. Replacement cells, connectors, and parts billed separately.",
     blurb: "Targeted fixes for failed cells, connectors, wiring, and BMS communication faults.",
     icon: "wrench",
     steps: ["Receive battery", "Diagnostic", "Quote approval", "Replace failed cells", "Repair connectors/wiring", "Load test", "Ready for pickup"],
@@ -32,6 +35,7 @@ export const SERVICES: Service[] = [
     id: "rebuilding",
     name: "Battery Rebuilding",
     startingPrice: 249,
+    priceNote: "Labor only. New cells and BMS components billed separately.",
     blurb: "Full teardown and cell refresh — new cells installed across all parallel groups with BMS reprogram.",
     icon: "hammer",
     steps: ["Receive battery", "Teardown & cell map", "Quote approval", "Full cell refresh", "Repack & spot weld", "BMS reprogram", "Load test", "Ready for pickup"],
@@ -40,6 +44,7 @@ export const SERVICES: Service[] = [
     id: "cell-replacement",
     name: "Cell Replacement",
     startingPrice: 199,
+    priceNote: "Labor only. Replacement cells billed separately at parts pricing.",
     blurb: "Swap out degraded or imbalanced cells with grade-A matched replacements.",
     icon: "battery",
     steps: ["Receive battery", "Cell map & imbalance check", "Quote approval", "Replace degraded cells", "Rebalance pack", "Capacity test", "Ready for pickup"],
@@ -48,6 +53,7 @@ export const SERVICES: Service[] = [
     id: "bms-replacement",
     name: "BMS Replacement",
     startingPrice: 149,
+    priceNote: "Labor only. Replacement BMS board billed separately.",
     blurb: "Failed or misbehaving battery management system? We replace and reprogram the BMS board.",
     icon: "circuit",
     steps: ["Receive battery", "BMS diagnostic", "Quote approval", "Replace BMS board", "Reprogram & pair cells", "Charge/discharge test", "Ready for pickup"],
@@ -56,6 +62,7 @@ export const SERVICES: Service[] = [
     id: "connector-repair",
     name: "Connector Repair",
     startingPrice: 79,
+    priceNote: "Labor only. Replacement connectors billed separately.",
     blurb: "Damaged charge or discharge connectors, broken pins, and shorted leads — fast turnaround.",
     icon: "plug",
     steps: ["Receive battery", "Connector inspection", "Quote approval", "Replace connector", "Reseal & insulate", "Continuity test", "Ready for pickup"],

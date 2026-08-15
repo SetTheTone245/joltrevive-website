@@ -119,6 +119,9 @@ export function AppointmentsPage() {
                   </button>
                 ))}
               </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Service prices cover labor only — replacement parts are billed separately. A confirmed quote is provided after the $80 diagnostic.
+              </p>
             </div>
 
             {/* Calendar */}

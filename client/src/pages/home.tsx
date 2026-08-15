@@ -157,6 +157,9 @@ export function HomePage() {
                     <Button variant="outline" size="sm" className="gap-1.5">Learn more <ArrowRight className="size-3.5" /></Button>
                   </Link>
                 </div>
+                <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+                  <span className="font-medium text-foreground/70">Labor only —</span> parts billed separately
+                </p>
               </div>
             );
           })}
