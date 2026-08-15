@@ -186,8 +186,9 @@ export const STORE_INFO = {
     { day: "Saturday", time: "10:00 AM – 6:00 PM" },
     { day: "Sunday", time: "11:00 AM – 4:00 PM" },
   ],
-  phone: "(718) 555-0192",
-  email: "service@joltrevive.com",
+  phone: "844-NYC-JOLT",
+  phoneTel: "+18446925658",
+  email: "Admin@JoltRevive.com",
 };
 
 export function formatPrice(n: number): string {

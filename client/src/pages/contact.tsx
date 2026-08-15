@@ -61,7 +61,7 @@ export function ContactPage() {
             <div className="rounded-xl border border-border bg-card p-5">
               <h2 className="font-display text-lg font-semibold">Shop details</h2>
               <ul className="mt-4 space-y-3 text-sm">
-                <li className="flex items-center gap-3"><Phone className="size-4 text-primary" /> <a href={`tel:${STORE_INFO.phone}`} className="hover:text-primary">{STORE_INFO.phone}</a></li>
+                <li className="flex items-center gap-3"><Phone className="size-4 text-primary" /> <a href={`tel:${STORE_INFO.phoneTel}`} className="hover:text-primary">{STORE_INFO.phone}</a></li>
                 <li className="flex items-center gap-3"><Mail className="size-4 text-primary" /> <a href={`mailto:${STORE_INFO.email}`} className="hover:text-primary">{STORE_INFO.email}</a></li>
                 <li className="flex items-start gap-3"><Clock className="mt-0.5 size-4 text-primary" />
                   <ul className="space-y-0.5">
