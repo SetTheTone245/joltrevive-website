@@ -150,7 +150,11 @@ function buildCatalog(): Battery[] {
         const hue = Math.floor(60 + rand() * 90); // green-yellow-cyan band
         const featured = counter <= 24 && rand() > 0.35;
 
-        const basePrice = Math.round((wh * (vt === "E-Motorcycle" ? 1.9 : vt === "E-Board" ? 4.5 : 2.4)) * 100) / 100;
+        // Realistic battery-pack pricing keyed to watt-hours (not full-vehicle price).
+        // E-bike ~$0.50/Wh, E-scooter ~$0.45/Wh, E-motorcycle ~$0.60/Wh, E-board ~$0.75/Wh,
+        // with a $99 floor so small packs stay reasonable.
+        const pricePerWh = vt === "E-Motorcycle" ? 0.6 : vt === "E-Board" ? 0.75 : vt === "E-Scooter" ? 0.45 : 0.5;
+        const basePrice = Math.max(99, Math.round(wh * pricePerWh));
 
         // --- New variant ---
         out.push({
