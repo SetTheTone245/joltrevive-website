@@ -14,17 +14,23 @@ import {
   type Part,
   type PartCategory,
 } from "@/lib/partsCatalog";
+import cellsImg from "@/assets/parts/cells.png";
+import bmsImg from "@/assets/parts/bms.png";
+import chargerImg from "@/assets/parts/charger.png";
+import connectorImg from "@/assets/parts/connector.png";
+import enclosureImg from "@/assets/parts/enclosure.png";
+import accessoriesImg from "@/assets/parts/accessories.png";
+
+export const CATEGORY_IMG: Record<PartCategory, string> = {
+  Cells: cellsImg,
+  BMS: bmsImg,
+  Chargers: chargerImg,
+  Connectors: connectorImg,
+  Enclosures: enclosureImg,
+  Accessories: accessoriesImg,
+};
 
 type SortKey = "price-asc" | "price-desc" | "rating" | "demand";
-
-const CATEGORY_ICON: Record<PartCategory, string> = {
-  Cells: "🔋",
-  BMS: "🧠",
-  Chargers: "🔌",
-  Connectors: "🔗",
-  Enclosures: "📦",
-  Accessories: "🛠️",
-};
 
 function PartCard({ part, onAdd }: { part: Part; onAdd: () => void }) {
   const highDemand = isHighDemandPart(part.brand);
@@ -33,8 +39,13 @@ function PartCard({ part, onAdd }: { part: Part; onAdd: () => void }) {
       className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/40"
       data-testid={`part-card-${part.id}`}
     >
-      <div className="relative flex aspect-[200/140] items-center justify-center bg-gradient-to-br from-background to-card">
-        <span className="text-5xl">{CATEGORY_ICON[part.category]}</span>
+      <div className="relative flex aspect-[200/140] items-center justify-center overflow-hidden bg-gradient-to-br from-background to-card">
+        <img
+          src={CATEGORY_IMG[part.category]}
+          alt={part.name}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
         <span className="absolute left-2 top-2 rounded-full border border-border bg-background/80 px-2 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur">
           {part.category}
         </span>

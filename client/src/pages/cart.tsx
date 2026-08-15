@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BatteryVisual } from "@/components/battery-visual";
 import { useCart, isPart } from "@/context/cart-context";
 import { formatPrice } from "@/lib/siteData";
+import { CATEGORY_IMG } from "@/pages/parts";
 
 export function CartPage() {
   const { items, setQty, remove, subtotal, count } = useCart();
@@ -46,8 +47,8 @@ export function CartPage() {
               <div key={p.id} className="flex gap-4 rounded-xl border border-border bg-card p-3" data-testid={`cart-item-${p.id}`}>
                 <Link href={link}>
                   {part ? (
-                    <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-border bg-background">
-                      <Cpu className="size-8 text-primary" />
+                    <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-background">
+                      <img src={CATEGORY_IMG[p.category]} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
                     </div>
                   ) : (
                     <BatteryVisual battery={p} className="h-20 w-28 shrink-0" />
