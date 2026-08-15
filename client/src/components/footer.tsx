@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { MapPin, Phone, Mail, Clock, Zap } from "lucide-react";
 import { Logo } from "./logo";
 import { STORE_INFO } from "@/lib/siteData";
+import { batteries } from "@/lib/batteryCatalog";
 
 export function Footer() {
   return (
@@ -15,7 +16,7 @@ export function Footer() {
               New York City riders.
             </p>
             <span className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-              <Zap className="size-3.5" /> 500+ battery database
+              <Zap className="size-3.5" /> {batteries.length}+ battery database
             </span>
           </div>
 

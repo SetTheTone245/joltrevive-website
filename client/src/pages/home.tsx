@@ -7,7 +7,7 @@ import {
 import { PageLayout, SectionHeading } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { BatteryCard } from "@/components/battery-card";
-import { VEHICLE_TYPES, featuredBatteries, getBrandsFor, type VehicleType } from "@/lib/batteryCatalog";
+import { VEHICLE_TYPES, featuredBatteries, getBrandsFor, batteries, type VehicleType } from "@/lib/batteryCatalog";
 import { SERVICES, TESTIMONIALS, PHASE2, STORE_INFO, formatPrice } from "@/lib/siteData";
 
 const SERVICE_ICONS: Record<string, React.ElementType> = {
@@ -22,7 +22,7 @@ const SERVICE_ICONS: Record<string, React.ElementType> = {
 export function HomePage() {
   const featured = featuredBatteries();
   const stats = [
-    { label: "Batteries in database", value: "500+" },
+    { label: "Batteries in database", value: `${batteries.length}+` },
     { label: "Vehicle brands", value: "23" },
     { label: "Avg. turnaround", value: "3 days" },
     { label: "Warranty up to", value: "24 mo" },
@@ -64,15 +64,6 @@ export function HomePage() {
                   <Button variant="outline" className="w-full gap-2 sm:w-auto" size="lg"><MapPin className="size-4" /> Get Directions</Button>
                 </Link>
               </div>
-
-              <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
-                {stats.map((s) => (
-                  <div key={s.label}>
-                    <dt className="font-display text-2xl font-semibold text-primary">{s.value}</dt>
-                    <dd className="text-xs text-muted-foreground">{s.label}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
 
             {/* Hero visual: battery finder quick start */}
@@ -109,6 +100,18 @@ export function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* stats strip (full width, so the finder sits right after CTAs on mobile) */}
+        <div className="relative mx-auto max-w-7xl px-4 pb-10 sm:px-6">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border pt-8 sm:grid-cols-4">
+            {stats.map((s) => (
+              <div key={s.label}>
+                <dt className="font-display text-2xl font-semibold text-primary">{s.value}</dt>
+                <dd className="text-xs text-muted-foreground">{s.label}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         {/* brand marquee */}
@@ -236,7 +239,7 @@ export function HomePage() {
             { icon: ShieldCheck, title: "Warranty on repairs", text: "Up to 24 months on serviced parts." },
             { icon: Clock, title: "Fast turnaround", text: "Most repairs in 2–4 days." },
             { icon: Truck, title: "Ship-in or drop-off", text: "Mail your battery or visit the Bronx." },
-            { icon: Zap, title: "500+ battery database", text: "The region's largest Li-ion resource." },
+            { icon: Zap, title: `${batteries.length}+ battery database`, text: "The region's largest Li-ion resource." },
           ].map((f) => (
             <div key={f.title} className="flex items-start gap-3">
               <f.icon className="size-5 shrink-0 text-primary" />

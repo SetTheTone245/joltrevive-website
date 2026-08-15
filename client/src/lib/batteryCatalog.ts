@@ -130,8 +130,8 @@ function buildCatalog(): Battery[] {
     const brands = MATRIX[vt];
     for (const { brand, models } of brands) {
       for (const model of models) {
-        const voltages = VEHICLE_VOLTAGE[vt];
-        const v = voltages[Math.floor(rand() * voltages.length)];
+        // iterate every supported voltage for this model → 500+ catalog entries
+        for (const v of VEHICLE_VOLTAGE[vt]) {
         // base capacity varies by vehicle
         const capBase = vt === "E-Motorcycle" ? 40 : vt === "E-Board" ? 4 : vt === "E-Scooter" ? 15 : 14;
         const ah = Math.round((capBase + rand() * capBase * 0.8) * 10) / 10;
@@ -182,8 +182,8 @@ function buildCatalog(): Battery[] {
         });
         counter++;
 
-        // --- Refurbished variant (most models) ---
-        if (rand() > 0.18) {
+        // --- Refurbished variant (always, for catalog breadth) ---
+        if (true) {
           const rem = Math.round((72 + rand() * 22) * 10) / 10;
           const cycles = Math.floor(90 + rand() * 420);
           const refPrice = Math.round(basePrice * (0.45 + rand() * 0.2));
@@ -221,8 +221,8 @@ function buildCatalog(): Battery[] {
           counter++;
         }
 
-        // --- Rebuilt variant (some models) ---
-        if (rand() > 0.5) {
+        // --- Rebuilt variant (always, for catalog breadth) ---
+        if (true) {
           const rebuildPrice = Math.round(basePrice * (0.6 + rand() * 0.2));
           out.push({
             id: `JR-${pad(counter)}`,
@@ -256,6 +256,7 @@ function buildCatalog(): Battery[] {
             },
           });
           counter++;
+        }
         }
       }
     }
