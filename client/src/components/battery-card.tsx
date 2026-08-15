@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice, conditionLabel, conditionBadgeClass } from "@/lib/siteData";
+import { isHighDemandBrand } from "@/lib/batteryCatalog";
 
 export function BatteryCard({ battery }: { battery: Battery }) {
   const { add } = useCart();
@@ -39,6 +40,21 @@ export function BatteryCard({ battery }: { battery: Battery }) {
             <span className="text-muted-foreground/70">({battery.reviewCount})</span>
           </span>
         </div>
+        {isHighDemandBrand(battery.brand) && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              ⚡ High demand
+            </span>
+            {!battery.inStock && (
+              <span className="inline-flex items-center rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">Limited stock</span>
+            )}
+          </div>
+        )}
+        {!isHighDemandBrand(battery.brand) && !battery.inStock && (
+          <div className="mt-2">
+            <span className="inline-flex items-center rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">Limited stock</span>
+          </div>
+        )}
         <Link href={`/product/${battery.id}`} className="mt-2 block">
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug hover:text-primary">{battery.name}</h3>
         </Link>

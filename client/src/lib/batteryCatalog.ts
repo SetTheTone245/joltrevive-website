@@ -84,6 +84,21 @@ const MATRIX: Record<VehicleType, { brand: string; models: string[] }[]> = {
 const CELLS = ["Samsung 25R", "Samsung 30Q", "LG MJ1", "LG HG2", "Panasonic NCR18650GA", "Molicel P26A", "Molicel P28A", "Sony VTC6", "EVE 25P", "BAK N18650"];
 const CHEMS: Chemistry[] = ["Li-ion NMC", "Li-ion NMC", "Li-ion NCA", "LiFePO4"];
 
+// Brand demand multipliers — popular/scarce brands carry a premium,
+// high-supply value brands sit below baseline. Used for supply-and-demand pricing.
+const DEMAND: Record<string, number> = {
+  "Sur-Ron": 1.25, "Trek": 1.22, "Stark": 1.22, "Zero": 1.2, "Aventon": 1.18,
+  "Specialized": 1.2, "Boosted": 1.15, "Evolve": 1.1, "Segway": 1.12,
+  "Apollo": 1.08, "Talaria": 1.06, "E Ride Pro": 1.1, "Lectric": 1.05,
+  "Giant": 1.05, "NIU": 1.05, "Kaabo": 1.04,
+  "Rad Power": 1.0, "Exway": 1.0,
+  "Backfire": 0.95, "Hiboy": 0.92, "Meepo": 0.92, "Gotrax": 0.9,
+};
+export const HIGH_DEMAND_THRESHOLD = 1.12;
+export function isHighDemandBrand(brand: string): boolean {
+  return (DEMAND[brand] ?? 1) >= HIGH_DEMAND_THRESHOLD;
+}
+
 // deterministic PRNG so the catalog is stable across renders
 function seededRandom(seed: number) {
   let s = seed % 2147483647;
@@ -151,10 +166,14 @@ function buildCatalog(): Battery[] {
         const featured = counter <= 24 && rand() > 0.35;
 
         // Realistic battery-pack pricing keyed to watt-hours (not full-vehicle price).
-        // E-bike ~$0.50/Wh, E-scooter ~$0.45/Wh, E-motorcycle ~$0.60/Wh, E-board ~$0.75/Wh,
-        // with a $99 floor so small packs stay reasonable.
+        // E-bike ~$0.50/Wh, E-scooter ~$0.45/Wh, E-motorcycle ~$0.60/Wh, E-board ~$0.75/Wh.
         const pricePerWh = vt === "E-Motorcycle" ? 0.6 : vt === "E-Board" ? 0.75 : vt === "E-Scooter" ? 0.45 : 0.5;
-        const basePrice = Math.max(99, Math.round(wh * pricePerWh));
+        // Supply & demand: brand demand + per-pack scarcity + stock premium (out-of-stock = scarce = pricier).
+        const demand = DEMAND[brand] ?? 1;
+        const scarcity = 0.92 + rand() * 0.25; // 0.92–1.17
+        const inStock = rand() > 0.12;
+        const stockPremium = inStock ? 1 : 1.18; // scarce packs carry a premium
+        const basePrice = Math.max(99, Math.round(wh * pricePerWh * demand * scarcity * stockPremium));
 
         // --- New variant ---
         out.push({
@@ -178,7 +197,7 @@ function buildCatalog(): Battery[] {
           rating: Math.round((4.2 + rand() * 0.7) * 10) / 10,
           reviewCount: Math.floor(4 + rand() * 80),
           featured: !!featured,
-          inStock: rand() > 0.12,
+          inStock,
           hue,
           ...(featured
             ? { reviews: FEATURED_REVIEWS.slice(0, 2 + Math.floor(rand() * 2)) }
@@ -190,7 +209,11 @@ function buildCatalog(): Battery[] {
         if (true) {
           const rem = Math.round((72 + rand() * 22) * 10) / 10;
           const cycles = Math.floor(90 + rand() * 420);
-          const refPrice = Math.round(basePrice * (0.45 + rand() * 0.2));
+          // Refurbished price scales with remaining capacity (higher capacity = more demanded = closer to new)
+          // and a per-pack supply discount. Lands ~50–62% of the new pack price.
+          const capacityFactor = rem / 100;
+          const refSupplyDiscount = 0.95 + rand() * 0.1;
+          const refPrice = Math.max(79, Math.round(basePrice * (0.38 + 0.22 * capacityFactor) * refSupplyDiscount));
           out.push({
             id: `JR-${pad(counter)}`,
             sku: `${brand.slice(0, 3).toUpperCase()}-${model.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6).toUpperCase()}-${v}V-RFB`,
@@ -227,7 +250,9 @@ function buildCatalog(): Battery[] {
 
         // --- Rebuilt variant (always, for catalog breadth) ---
         if (true) {
-          const rebuildPrice = Math.round(basePrice * (0.6 + rand() * 0.2));
+          // Rebuilt packs have fresh cells, so price sits close to new but reflects
+          // parts/labor supply. Lands ~60–78% of the new pack price.
+          const rebuildPrice = Math.max(99, Math.round(basePrice * (0.62 + rand() * 0.15) * (0.95 + rand() * 0.1)));
           out.push({
             id: `JR-${pad(counter)}`,
             sku: `${brand.slice(0, 3).toUpperCase()}-${model.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6).toUpperCase()}-${v}V-RB`,
@@ -266,11 +291,8 @@ function buildCatalog(): Battery[] {
     }
   }
 
-  // mark a few as out of stock
-  for (let i = 0; i < 6; i++) {
-    const idx = Math.floor(rand() * out.length);
-    if (out[idx].condition === "new") out[idx].inStock = false;
-  }
+  // Stock state is set per-pack during generation and tied to the scarcity
+  // price premium, so no post-hoc out-of-stock override is applied here.
   return out;
 }
 
