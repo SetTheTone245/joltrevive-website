@@ -8,19 +8,7 @@ import {
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getQueryFn } from "@/lib/queryClient";
-
-interface RepairResponse {
-  repairNumber: string;
-  vehicle: string;
-  service: string;
-  statusIndex: number;
-  receivedAt: string;
-  estimatedReady: string;
-  technician: string;
-  notes: string[];
-  steps: string[];
-}
+import { lookupRepair, type RepairResponse } from "@/lib/staticApi";
 
 export function TrackRepairPage() {
   const params = new URLSearchParams(window.location.hash.split("?")[1] || "");
@@ -31,7 +19,7 @@ export function TrackRepairPage() {
   const { data, isLoading, isError } = useQuery<RepairResponse>({
     queryKey: ["/api/repairs", searched],
     enabled: !!searched,
-    queryFn: getQueryFn<RepairResponse>({ on401: "throw" }),
+    queryFn: () => lookupRepair(searched),
   });
 
   const submit = (e: React.FormEvent) => {

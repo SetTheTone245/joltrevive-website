@@ -12,18 +12,7 @@ import {
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { apiRequest } from "@/lib/queryClient";
-import type { Appointment } from "@shared/schema";
-
-interface AppointmentInput {
-  service: string;
-  date: string;
-  time: string;
-  name: string;
-  email: string;
-  phone: string;
-  notes: string;
-}
+import { createAppointment, type Appointment, type AppointmentInput } from "@/lib/staticApi";
 
 const SERVICES = [
   { id: "diagnostic", label: "Diagnostic", icon: Stethoscope },
@@ -54,8 +43,7 @@ export function AppointmentsPage() {
   const [notes, setNotes] = useState("");
 
   const mutation = useMutation<Appointment, Error, AppointmentInput>({
-    mutationFn: (data) =>
-      apiRequest("POST", "/api/appointments", data).then((r) => r.json()),
+    mutationFn: (data) => createAppointment(data),
   });
 
   const days = useMemo(() => {
