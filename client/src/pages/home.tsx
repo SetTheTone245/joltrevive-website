@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import {
-  Battery, Calendar, ShoppingBag, MapPin, ArrowRight, Star, Zap,
+  Battery, Calendar, ShoppingBag, MapPin, ArrowRight, Star, Zap, Cpu,
   Stethoscope, Wrench, Hammer, Plug, CircuitBoard, SlidersHorizontal, Sparkles,
   ShieldCheck, Clock, Package, Truck,
 } from "lucide-react";
@@ -59,6 +59,9 @@ export function HomePage() {
                 </Link>
                 <Link href="/store" data-testid="hero-shop">
                   <Button variant="outline" className="w-full gap-2 sm:w-auto" size="lg"><ShoppingBag className="size-4" /> Shop Batteries</Button>
+                </Link>
+                <Link href="/parts" data-testid="hero-parts">
+                  <Button variant="outline" className="w-full gap-2 sm:w-auto" size="lg"><Cpu className="size-4" /> Shop Parts</Button>
                 </Link>
                 <Link href="/contact" data-testid="hero-directions">
                   <Button variant="outline" className="w-full gap-2 sm:w-auto" size="lg"><MapPin className="size-4" /> Get Directions</Button>

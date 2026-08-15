@@ -12,6 +12,7 @@ const NAV = [
   { href: "/", label: "Home" },
   { href: "/finder", label: "Battery Finder" },
   { href: "/store", label: "Store" },
+  { href: "/parts", label: "Parts" },
   { href: "/repair", label: "Repair Center" },
   { href: "/appointments", label: "Appointments" },
   { href: "/contact", label: "Contact" },

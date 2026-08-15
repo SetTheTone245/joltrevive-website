@@ -1,9 +1,9 @@
 import { Link } from "wouter";
-import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Store, Zap, ShieldCheck } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Store, Zap, ShieldCheck, Cpu } from "lucide-react";
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { BatteryVisual } from "@/components/battery-visual";
-import { useCart } from "@/context/cart-context";
+import { useCart, isPart } from "@/context/cart-context";
 import { formatPrice } from "@/lib/siteData";
 
 export function CartPage() {
@@ -19,10 +19,11 @@ export function CartPage() {
             <ShoppingCart className="size-7 text-muted-foreground" />
           </div>
           <h1 className="mt-5 font-display text-2xl font-semibold">Your cart is empty</h1>
-          <p className="mt-2 text-muted-foreground">Find the right battery for your ride and add it here.</p>
+          <p className="mt-2 text-muted-foreground">Find the right battery or parts for your ride and add them here.</p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link href="/finder"><Button className="gap-2"><Zap className="size-4" /> Find My Battery</Button></Link>
             <Link href="/store"><Button variant="outline" className="gap-2"><Store className="size-4" /> Browse store</Button></Link>
+            <Link href="/parts"><Button variant="outline" className="gap-2"><Cpu className="size-4" /> Browse parts</Button></Link>
           </div>
         </div>
       </PageLayout>
@@ -38,33 +39,46 @@ export function CartPage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
           {/* Items */}
           <div className="space-y-3">
-            {items.map(({ battery: b, qty }) => (
-              <div key={b.id} className="flex gap-4 rounded-xl border border-border bg-card p-3" data-testid={`cart-item-${b.id}`}>
-                <Link href={`/product/${b.id}`}>
-                  <BatteryVisual battery={b} className="h-20 w-28 shrink-0" />
+            {items.map(({ product: p, qty }) => {
+              const part = isPart(p);
+              const link = part ? "/parts" : `/product/${p.id}`;
+              return (
+              <div key={p.id} className="flex gap-4 rounded-xl border border-border bg-card p-3" data-testid={`cart-item-${p.id}`}>
+                <Link href={link}>
+                  {part ? (
+                    <div className="flex h-20 w-28 shrink-0 items-center justify-center rounded-lg border border-border bg-background">
+                      <Cpu className="size-8 text-primary" />
+                    </div>
+                  ) : (
+                    <BatteryVisual battery={p} className="h-20 w-28 shrink-0" />
+                  )}
                 </Link>
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <Link href={`/product/${b.id}`} className="text-sm font-semibold hover:text-primary">{b.name}</Link>
-                      <p className="font-mono text-xs text-muted-foreground">{b.voltage}V · {b.wattHours}Wh · {b.chemistry}</p>
+                      <Link href={link} className="text-sm font-semibold hover:text-primary">{p.name}</Link>
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {part ? `${p.category} · ${p.spec}` : `${p.voltage}V · ${p.wattHours}Wh · ${p.chemistry}`}
+                      </p>
                     </div>
-                    <button onClick={() => remove(b.id)} className="text-muted-foreground hover:text-destructive" aria-label="Remove" data-testid={`cart-remove-${b.id}`}>
+                    <button onClick={() => remove(p.id)} className="text-muted-foreground hover:text-destructive" aria-label="Remove" data-testid={`cart-remove-${p.id}`}>
                       <Trash2 className="size-4" />
                     </button>
                   </div>
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center rounded-md border border-border">
-                      <button onClick={() => setQty(b.id, qty - 1)} className="p-1.5 hover-elevate" aria-label="Decrease" data-testid={`cart-dec-${b.id}`}><Minus className="size-3.5" /></button>
-                      <span className="w-8 text-center text-sm font-medium" data-testid={`cart-qty-${b.id}`}>{qty}</span>
-                      <button onClick={() => setQty(b.id, qty + 1)} className="p-1.5 hover-elevate" aria-label="Increase" data-testid={`cart-inc-${b.id}`}><Plus className="size-3.5" /></button>
+                      <button onClick={() => setQty(p.id, qty - 1)} className="p-1.5 hover-elevate" aria-label="Decrease" data-testid={`cart-dec-${p.id}`}><Minus className="size-3.5" /></button>
+                      <span className="w-8 text-center text-sm font-medium" data-testid={`cart-qty-${p.id}`}>{qty}</span>
+                      <button onClick={() => setQty(p.id, qty + 1)} className="p-1.5 hover-elevate" aria-label="Increase" data-testid={`cart-inc-${p.id}`}><Plus className="size-3.5" /></button>
                     </div>
-                    <span className="font-semibold">{formatPrice(b.price * qty)}</span>
+                    <span className="font-semibold">{formatPrice(p.price * qty)}</span>
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
             <Link href="/store"><Button variant="ghost" size="sm" className="gap-1.5">Continue shopping <ArrowRight className="size-3.5" /></Button></Link>
+            <Link href="/parts"><Button variant="ghost" size="sm" className="gap-1.5">Browse parts <Cpu className="size-3.5" /></Button></Link>
           </div>
 
           {/* Summary */}

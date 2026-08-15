@@ -18,6 +18,7 @@ import { RepairPage } from "@/pages/repair";
 import { TrackRepairPage } from "@/pages/track-repair";
 import { AppointmentsPage } from "@/pages/appointments";
 import { ContactPage } from "@/pages/contact";
+import { PartsPage } from "@/pages/parts";
 import NotFound from "@/pages/not-found";
 
 function AppRouter() {
@@ -33,6 +34,7 @@ function AppRouter() {
   if (path === "/") page = <HomePage />;
   else if (path === "/finder") page = <FinderPage />;
   else if (path === "/store") page = <StorePage />;
+  else if (path === "/parts") page = <PartsPage />;
   else if (path.startsWith("/product/")) page = <ProductPage id={path.slice("/product/".length)} />;
   else if (path === "/cart") page = <CartPage />;
   else if (path === "/checkout") page = <CheckoutPage />;

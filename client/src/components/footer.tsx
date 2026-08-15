@@ -25,6 +25,7 @@ export function Footer() {
             <ul className="mt-3 space-y-2 text-sm">
               <li><Link href="/finder" className="text-muted-foreground hover:text-foreground">Battery Finder</Link></li>
               <li><Link href="/store" className="text-muted-foreground hover:text-foreground">Online Store</Link></li>
+              <li><Link href="/parts" className="text-muted-foreground hover:text-foreground">Battery Parts</Link></li>
               <li><Link href="/repair" className="text-muted-foreground hover:text-foreground">Repair Center</Link></li>
               <li><Link href="/repair/track" className="text-muted-foreground hover:text-foreground">Track a Repair</Link></li>
               <li><Link href="/appointments" className="text-muted-foreground hover:text-foreground">Book Appointment</Link></li>
