@@ -57,9 +57,38 @@ npx serve dist/public
 Pushes to `main` trigger `.github/workflows/deploy.yml`, which type-checks, builds
 the static client, and publishes `dist/public` to GitHub Pages.
 
+Pull requests against `main` trigger `.github/workflows/pr-preview.yml`, which type-checks,
+builds, reports bundle sizes as a PR comment, and uploads the built site as a downloadable
+artifact. Broken code cannot reach `main` unnoticed.
+
 ### One-time repository setup
 
-In **Settings → Pages**, set **Source** to **GitHub Actions**.
+In **Settings → Pages**, set **Source** to **GitHub Actions**. (Already configured.)
+
+### Custom domain (joltrevive.com)
+
+The domain is registered through **Wix** and uses Wix nameservers
+(`ns10.wixdns.net`, `ns11.wixdns.net`). To point it at this site, edit the DNS records in
+the Wix dashboard (**Domains → joltrevive.com → Manage DNS Records**):
+
+| Type | Host | Value |
+| --- | --- | --- |
+| `A` | `@` | `185.199.108.153` |
+| `A` | `@` | `185.199.109.153` |
+| `A` | `@` | `185.199.110.153` |
+| `A` | `@` | `185.199.111.153` |
+| `CNAME` | `www` | `setthetone245.github.io` |
+
+Optional IPv6 (`AAAA` on `@`): `2606:50c0:8000::153`, `2606:50c0:8001::153`,
+`2606:50c0:8002::153`, `2606:50c0:8003::153`.
+
+The `CNAME` target excludes the repository name — it is the GitHub user domain, not the
+project URL. Record values are per the
+[GitHub Pages custom domain docs](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
+
+After DNS propagates, add the domain under **Settings → Pages → Custom domain** and enable
+**Enforce HTTPS**. Do this *after* DNS is live: setting it early commits a `CNAME` file that
+redirects the working `github.io` URL to a domain that is not yet resolving.
 
 ### Static-hosting notes
 
