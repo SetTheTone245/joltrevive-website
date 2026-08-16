@@ -12,7 +12,7 @@ import {
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createAppointment, type Appointment, type AppointmentInput } from "@/lib/staticApi";
+import { createAppointment, type Appointment, type AppointmentInput } from "@/lib/api";
 
 const SERVICES = [
   { id: "diagnostic", label: "Diagnostic", icon: Stethoscope },

@@ -1,13 +1,7 @@
-import { repairs, appointments } from "@shared/schema";
-import type { Repair, Appointment, InsertAppointment } from "@shared/schema";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import { eq } from "drizzle-orm";
-
-const sqlite = new Database("data.db");
-sqlite.pragma("journal_mode = WAL");
-
-export const db = drizzle(sqlite);
+import { repairs, appointments } from "../shared/schema.js";
+import type { Repair, Appointment, InsertAppointment } from "../shared/schema.js";
+import { getDb } from "./db.js";
+import { eq, sql } from "drizzle-orm";
 
 interface SeedRepair {
   repairNumber: string;
@@ -70,19 +64,47 @@ export interface IStorage {
   getAppointment(confirmation: string): Promise<Appointment | undefined>;
 }
 
-export class DatabaseStorage implements IStorage {
-  constructor() {
-    this.seed();
-  }
+// Schema creation + seeding runs at most once per serverless instance.
+// The promise is cached so concurrent requests share a single initialisation.
+let readyPromise: Promise<void> | null = null;
 
-  private seed() {
-    try {
-      sqlite.exec("CREATE TABLE IF NOT EXISTS repairs (repair_number TEXT PRIMARY KEY, vehicle TEXT NOT NULL, service TEXT NOT NULL, status_index INTEGER NOT NULL, received_at TEXT NOT NULL, estimated_ready TEXT NOT NULL, technician TEXT NOT NULL, notes TEXT NOT NULL)");
-      sqlite.exec("CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY AUTOINCREMENT, confirmation TEXT NOT NULL UNIQUE, service TEXT NOT NULL, date TEXT NOT NULL, time TEXT NOT NULL, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL, notes TEXT DEFAULT '', created_at TEXT NOT NULL)");
-      const existing = db.select().from(repairs).all();
-      if (existing.length === 0) {
-        for (const r of SEED_REPAIRS) {
-          db.insert(repairs).values({
+function initialise(): Promise<void> {
+  if (!readyPromise) {
+    readyPromise = (async () => {
+      await getDb().execute(sql`
+        CREATE TABLE IF NOT EXISTS repairs (
+          repair_number TEXT PRIMARY KEY,
+          vehicle TEXT NOT NULL,
+          service TEXT NOT NULL,
+          status_index INTEGER NOT NULL DEFAULT 0,
+          received_at TEXT NOT NULL,
+          estimated_ready TEXT NOT NULL,
+          technician TEXT NOT NULL,
+          notes TEXT NOT NULL
+        )
+      `);
+
+      await getDb().execute(sql`
+        CREATE TABLE IF NOT EXISTS appointments (
+          id SERIAL PRIMARY KEY,
+          confirmation TEXT NOT NULL UNIQUE,
+          service TEXT NOT NULL,
+          date TEXT NOT NULL,
+          time TEXT NOT NULL,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          notes TEXT DEFAULT '',
+          created_at TEXT NOT NULL
+        )
+      `);
+
+      // Idempotent seed — ON CONFLICT means re-running never duplicates or
+      // overwrites a record an operator has since edited.
+      for (const r of SEED_REPAIRS) {
+        await getDb()
+          .insert(repairs)
+          .values({
             repairNumber: r.repairNumber,
             vehicle: r.vehicle,
             service: r.service,
@@ -91,35 +113,63 @@ export class DatabaseStorage implements IStorage {
             estimatedReady: r.estimatedReady,
             technician: r.technician,
             notes: JSON.stringify(r.notes),
-          }).run();
-        }
+          })
+          .onConflictDoNothing();
       }
-    } catch (e) {
-      console.error("seed error", e);
-    }
+    })().catch((err) => {
+      // Reset so a transient failure (cold Neon branch, network blip) can retry
+      // on the next request instead of poisoning the whole instance.
+      readyPromise = null;
+      throw err;
+    });
   }
+  return readyPromise;
+}
 
+export class DatabaseStorage implements IStorage {
   async getRepair(repairNumber: string): Promise<Repair | undefined> {
-    const r = db.select().from(repairs).where(eq(repairs.repairNumber, repairNumber.toUpperCase())).get();
-    if (!r) return undefined;
-    return { ...r, notes: r.notes };
+    await initialise();
+    const rows = await getDb()
+      .select()
+      .from(repairs)
+      .where(eq(repairs.repairNumber, repairNumber.trim().toUpperCase()))
+      .limit(1);
+    return rows[0];
   }
 
   async listRepairs(): Promise<Repair[]> {
-    return db.select().from(repairs).all();
+    await initialise();
+    return getDb().select().from(repairs);
   }
 
   async createAppointment(data: InsertAppointment): Promise<Appointment> {
-    const confirmation = "JR-AP-" + Math.random().toString(36).slice(2, 7).toUpperCase();
-    return db.insert(appointments).values({
-      ...data,
-      confirmation,
-      createdAt: new Date().toISOString(),
-    }).returning().get();
+    await initialise();
+    // Retry on the (astronomically unlikely) confirmation-code collision rather
+    // than returning a 500 to a customer who is trying to book.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const confirmation = "JR-AP-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+      const rows = await getDb()
+        .insert(appointments)
+        .values({
+          ...data,
+          confirmation,
+          createdAt: new Date().toISOString(),
+        })
+        .onConflictDoNothing({ target: appointments.confirmation })
+        .returning();
+      if (rows[0]) return rows[0];
+    }
+    throw new Error("Could not allocate a unique confirmation code");
   }
 
   async getAppointment(confirmation: string): Promise<Appointment | undefined> {
-    return db.select().from(appointments).where(eq(appointments.confirmation, confirmation.toUpperCase())).get();
+    await initialise();
+    const rows = await getDb()
+      .select()
+      .from(appointments)
+      .where(eq(appointments.confirmation, confirmation.trim().toUpperCase()))
+      .limit(1);
+    return rows[0];
   }
 }
 

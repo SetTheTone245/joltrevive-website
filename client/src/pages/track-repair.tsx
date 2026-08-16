@@ -8,7 +8,7 @@ import {
 import { PageLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { lookupRepair, type RepairResponse } from "@/lib/staticApi";
+import { lookupRepair, type RepairResponse } from "@/lib/api";
 
 export function TrackRepairPage() {
   const params = new URLSearchParams(window.location.hash.split("?")[1] || "");

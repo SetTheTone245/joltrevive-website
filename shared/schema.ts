@@ -1,9 +1,9 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, serial } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import type * as z from "zod/mini";
 
 // Repair tracking records (seeded with sample repairs for the demo)
-export const repairs = sqliteTable("repairs", {
+export const repairs = pgTable("repairs", {
   repairNumber: text("repair_number").primaryKey(),
   vehicle: text("vehicle").notNull(),
   service: text("service").notNull(),
@@ -14,8 +14,8 @@ export const repairs = sqliteTable("repairs", {
   notes: text("notes").notNull(), // JSON array of strings
 });
 
-export const appointments = sqliteTable("appointments", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const appointments = pgTable("appointments", {
+  id: serial("id").primaryKey(),
   confirmation: text("confirmation").notNull().unique(),
   service: text("service").notNull(),
   date: text("date").notNull(),

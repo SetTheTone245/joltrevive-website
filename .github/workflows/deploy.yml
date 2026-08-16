@@ -39,7 +39,24 @@ jobs:
         run: npm run check
 
       - name: Build static client
+        # VITE_API_BASE_URL points the client at the Express API on Vercel so
+        # bookings and repair lookups hit Postgres. It is a repository variable
+        # (Settings > Secrets and variables > Actions > Variables) so the URL
+        # can be switched -- e.g. to https://api.joltrevive.com once DNS is
+        # cut over -- without editing code.
+        # If the variable is unset, the client silently falls back to its
+        # built-in static data layer and the site still works.
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         run: npm run build:static
+
+      - name: Report API wiring
+        run: |
+          if [ -n "${{ vars.VITE_API_BASE_URL }}" ]; then
+            echo "Client built against API: ${{ vars.VITE_API_BASE_URL }}"
+          else
+            echo "VITE_API_BASE_URL is not set - client built with the static fallback data layer."
+          fi
 
       - name: Disable Jekyll processing
         # Stops GitHub Pages from ignoring files/folders that begin with an underscore
