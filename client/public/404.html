@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0c0d10" />
+    <title>Jolt Revive</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // GitHub Pages deep-link fallback.
+      //
+      // Jolt Revive is a single-page app that uses hash routing (/#/store), so the
+      // server only ever needs to serve "/". Clean paths like /store or /repair have
+      // no file behind them, which makes GitHub Pages serve this 404 page instead.
+      //
+      // Rather than showing an error, translate the clean path into the equivalent
+      // hash route and hand control back to the app. /store -> /#/store
+      (function () {
+        var loc = window.location;
+
+        var path = loc.pathname || "/";
+
+        // Drop the project-page prefix if the site is reached via
+        // setthetone245.github.io/joltrevive-website/ instead of the custom domain.
+        path = path.replace(/^\/joltrevive-website(?=\/|$)/, "");
+
+        // Normalise: ensure a single leading slash, no trailing slash.
+        path = "/" + path.replace(/^\/+/, "").replace(/\/+$/, "");
+
+        // If an explicit hash route is already present, trust it over the path.
+        var route = loc.hash ? loc.hash.replace(/^#/, "") : path + (loc.search || "");
+
+        if (!route || route === "/") {
+          loc.replace("/");
+        } else {
+          loc.replace("/#" + route);
+        }
+      })();
+    </script>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0c0d10;
+        color: #f4f4f5;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      a {
+        color: #7dd3fc;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <p>
+        This page needs JavaScript to load.
+        <a href="/">Go to the Jolt Revive home page</a>.
+      </p>
+    </noscript>
+  </body>
+</html>
