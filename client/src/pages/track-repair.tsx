@@ -19,7 +19,12 @@ export function TrackRepairPage() {
   const { data, isLoading, isError } = useQuery<RepairResponse>({
     queryKey: ["/api/repairs", searched],
     enabled: !!searched,
-    queryFn: () => lookupRepair(searched),
+    queryFn: async () => {
+      const repair = await lookupRepair(searched);
+      // Mirror the old API's 404 so the "not found" UI still renders
+      if (!repair) throw new Error("404: Repair not found");
+      return repair;
+    },
   });
 
   const submit = (e: React.FormEvent) => {
