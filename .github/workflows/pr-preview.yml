@@ -1,0 +1,80 @@
+name: PR Build Check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# One run per PR; new pushes cancel the previous run
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Type check and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run check
+
+      - name: Build static client
+        run: npm run build:static
+
+      - name: Collect build stats
+        id: stats
+        run: |
+          {
+            echo 'report<<REPORT_EOF'
+            echo "| File | Size |"
+            echo "| --- | --- |"
+            find dist/public -type f \
+              \( -name '*.js' -o -name '*.css' -o -name '*.html' \) \
+              -printf '%s\t%P\n' \
+              | sort -rn \
+              | awk -F'\t' '{ printf "| `%s` | %.1f kB |\n", $2, $1/1024 }'
+            echo "REPORT_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "total=$(du -sh dist/public | cut -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload preview build
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-pr-${{ github.event.pull_request.number }}
+          path: dist/public
+          retention-days: 14
+
+      - name: Comment build result on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: preview-build
+          message: |
+            ### Build succeeded
+
+            Type check passed and the static site built cleanly.
+
+            **Total build size:** ${{ steps.stats.outputs.total }}
+
+            ${{ steps.stats.outputs.report }}
+
+            **To preview locally:** download the
+            [`preview-pr-${{ github.event.pull_request.number }}` artifact](${{ steps.upload.outputs.artifact-url }}),
+            unzip it, then run `npx serve .` inside the folder.
+
+            _Merging this PR to `main` deploys automatically to GitHub Pages._
