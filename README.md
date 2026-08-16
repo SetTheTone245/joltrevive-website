@@ -113,3 +113,5 @@ All product photography is original, generated imagery with no third-party brand
 logos, or trademarks — so it carries no copyright restrictions. Battery listings use
 procedurally drawn visuals (`components/battery-visual.tsx`) rather than manufacturer
 product photos.
+
+<!-- CI verification: confirming the PR build check workflow runs. -->
