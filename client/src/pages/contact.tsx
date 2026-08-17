@@ -4,17 +4,41 @@ import { PageLayout, SectionHeading } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { STORE_INFO, TESTIMONIALS } from "@/lib/siteData";
+import { ApiError, submitContact } from "@/lib/api";
 
 export function ContactPage() {
   const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [mailtoUrl, setMailtoUrl] = useState("");
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Message sent", description: `Thanks ${name.split(" ")[0] || ""} — we'll reply within one business day. (Demo)` });
-    setName(""); setEmail(""); setMessage("");
+    setError("");
+    setMailtoUrl("");
+    setIsSubmitting(true);
+    try {
+      await submitContact({ name, email, phone: phone || undefined, message });
+      toast({ title: "Message sent", description: `Thanks ${name.split(" ")[0] || ""} — we'll reply within one business day.` });
+      setName(""); setEmail(""); setPhone(""); setMessage("");
+    } catch (submissionError) {
+      if (!(submissionError instanceof ApiError) || submissionError.status >= 500) {
+        const fallback = `mailto:${STORE_INFO.email}?${new URLSearchParams({
+          subject: `Jolt Revive website message from ${name}`,
+          body: `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "(not provided)"}\n\n${message}`,
+        }).toString()}`;
+        setMailtoUrl(fallback);
+        setError("We couldn't reach the message service. Please use the prefilled email link so your message reaches us.");
+      } else {
+        setError(submissionError.message || "We couldn't send your message. Please check your details and try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(STORE_INFO.mapsQuery)}`;
@@ -100,14 +124,23 @@ export function ContactPage() {
                 <input value={email} onChange={(e) => setEmail(e.target.value)} required type="email" className="input mt-1" data-testid="contact-email" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Message</label>
-                <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={4} className="input mt-1" data-testid="contact-message" placeholder="What's going on with your battery?" />
+                <label className="text-xs font-medium text-muted-foreground">Phone <span className="font-normal">(optional)</span></label>
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" className="input mt-1" data-testid="contact-phone" />
               </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Message</label>
+                <textarea value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={5000} rows={4} className="input mt-1" data-testid="contact-message" placeholder="What's going on with your battery?" />
+              </div>
+              {error && (
+                <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" data-testid="contact-error">
+                  {error} {mailtoUrl && <a className="font-semibold underline" href={mailtoUrl}>Email Jolt Revive instead</a>}
+                </p>
+              )}
               <div className="flex items-center justify-between">
                 <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("jolt:open-chat"))} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
                   <MessageSquare className="size-4" /> Or chat with a technician
                 </button>
-                <Button type="submit" className="gap-2" data-testid="contact-submit"><Send className="size-4" /> Send</Button>
+                <Button type="submit" className="gap-2" disabled={isSubmitting} data-testid="contact-submit"><Send className="size-4" /> {isSubmitting ? "Sending…" : "Send"}</Button>
               </div>
             </form>
           </div>

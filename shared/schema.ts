@@ -27,6 +27,15 @@ export const appointments = pgTable("appointments", {
   createdAt: text("created_at").notNull(),
 });
 
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  message: text("message").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   service: true,
   date: true,
@@ -37,6 +46,15 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   notes: true,
 });
 
+export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
+  name: true,
+  email: true,
+  phone: true,
+  message: true,
+});
+
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
 export type Appointment = typeof appointments.$inferSelect;
+export type ContactMessage = typeof contactMessages.$inferSelect;
 export type Repair = typeof repairs.$inferSelect;

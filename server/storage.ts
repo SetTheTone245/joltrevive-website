@@ -1,7 +1,13 @@
-import { repairs, appointments } from "../shared/schema.js";
-import type { Repair, Appointment, InsertAppointment } from "../shared/schema.js";
+import { repairs, appointments, contactMessages } from "../shared/schema.js";
+import type {
+  Repair,
+  Appointment,
+  ContactMessage,
+  InsertAppointment,
+  InsertContactMessage,
+} from "../shared/schema.js";
 import { getDb } from "./db.js";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 
 interface SeedRepair {
   repairNumber: string;
@@ -62,6 +68,9 @@ export interface IStorage {
   listRepairs(): Promise<Repair[]>;
   createAppointment(data: InsertAppointment): Promise<Appointment>;
   getAppointment(confirmation: string): Promise<Appointment | undefined>;
+  listAppointments(): Promise<Appointment[]>;
+  createContactMessage(data: InsertContactMessage): Promise<ContactMessage>;
+  listContactMessages(): Promise<ContactMessage[]>;
 }
 
 // Schema creation + seeding runs at most once per serverless instance.
@@ -95,6 +104,17 @@ function initialise(): Promise<void> {
           email TEXT NOT NULL,
           phone TEXT NOT NULL,
           notes TEXT DEFAULT '',
+          created_at TEXT NOT NULL
+        )
+      `);
+
+      await getDb().execute(sql`
+        CREATE TABLE IF NOT EXISTS contact_messages (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT,
+          message TEXT NOT NULL,
           created_at TEXT NOT NULL
         )
       `);
@@ -170,6 +190,29 @@ export class DatabaseStorage implements IStorage {
       .where(eq(appointments.confirmation, confirmation.trim().toUpperCase()))
       .limit(1);
     return rows[0];
+  }
+
+  async listAppointments(): Promise<Appointment[]> {
+    await initialise();
+    return getDb().select().from(appointments).orderBy(desc(appointments.createdAt));
+  }
+
+  async createContactMessage(data: InsertContactMessage): Promise<ContactMessage> {
+    await initialise();
+    const rows = await getDb()
+      .insert(contactMessages)
+      .values({
+        ...data,
+        phone: data.phone || null,
+        createdAt: new Date().toISOString(),
+      })
+      .returning();
+    return rows[0];
+  }
+
+  async listContactMessages(): Promise<ContactMessage[]> {
+    await initialise();
+    return getDb().select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
   }
 }
 
