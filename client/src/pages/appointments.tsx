@@ -82,7 +82,7 @@ export function AppointmentsPage() {
             <h2 className="mt-4 font-display text-xl font-semibold">Appointment booked</h2>
             <p className="mt-1 text-sm text-muted-foreground">{mutation.data.service} on {format(parseISO(mutation.data.date), "MMM d, yyyy")} at {mutation.data.time}</p>
             <p className="mt-4 font-mono text-lg font-semibold text-primary" data-testid="appt-confirmation">{mutation.data.confirmation}</p>
-            <p className="mt-2 text-xs text-muted-foreground">Save this confirmation number. We'll also email a reminder to {mutation.data.email}.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Save this confirmation number. Our team will follow up at {mutation.data.email}.</p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Link href="/repair/track"><Button variant="outline" className="gap-2">Track a repair</Button></Link>
               <Button onClick={() => { mutation.reset(); setSelectedDate(null); setSlot(null); setFiles([]); setName(""); setEmail(""); setPhone(""); setNotes(""); }} className="gap-2">Book another</Button>
@@ -216,7 +216,7 @@ export function AppointmentsPage() {
               </div>
             </div>
 
-            {mutation.isError && <p className="text-sm text-destructive">Couldn't book — please try again.</p>}
+            {mutation.isError && <p className="text-sm text-destructive">{mutation.error.message}</p>}
 
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">{selectedDate && slot ? `${format(selectedDate, "MMM d")} at ${slot}` : "Select a date & time"}</p>

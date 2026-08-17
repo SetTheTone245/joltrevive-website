@@ -15,13 +15,52 @@ import type { RepairResponse, Appointment, AppointmentInput } from "./staticApi"
 export type { RepairResponse, Appointment, AppointmentInput };
 export { REPAIR_STEPS } from "./staticApi";
 
+export interface ContactInput {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+}
+
+export interface ContactSubmission {
+  ok: true;
+  id: number;
+}
+
+export interface CheckoutItemInput {
+  id: string;
+  quantity: number;
+}
+
+export interface AdminSubmissions {
+  contactMessages: Array<{
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    message: string;
+    createdAt: string;
+  }>;
+  appointments: Appointment[];
+  repairs: Array<{
+    repairNumber: string;
+    vehicle: string;
+    service: string;
+    statusIndex: number;
+    receivedAt: string;
+    estimatedReady: string;
+    technician: string;
+    notes: string;
+  }>;
+}
+
 const RAW_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim();
 // Tolerate a trailing slash in the env var.
 const API_BASE = RAW_BASE.replace(/\/+$/, "");
 
 export const isLive = API_BASE.length > 0;
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
@@ -67,7 +106,12 @@ export async function lookupRepair(number: string): Promise<RepairResponse | und
 }
 
 export async function createAppointment(input: AppointmentInput): Promise<Appointment> {
-  if (!isLive) return staticApi.createAppointment(input);
+  if (!isLive) {
+    throw new ApiError(
+      "Online booking is currently unavailable. Please call 844-NYC-JOLT or use the contact page.",
+      503,
+    );
+  }
   return request<Appointment>("/api/appointments", {
     method: "POST",
     body: JSON.stringify(input),
@@ -83,4 +127,45 @@ export async function getAppointment(confirmation: string): Promise<Appointment 
     if (err instanceof ApiError && err.status === 404) return undefined;
     throw err;
   }
+}
+
+export async function submitContact(input: ContactInput): Promise<ContactSubmission> {
+  if (!isLive) {
+    throw new ApiError("The live contact service is not configured.", 503);
+  }
+  return request<ContactSubmission>("/api/contact", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function getCheckoutConfig(): Promise<{ enabled: boolean }> {
+  if (!isLive) return { enabled: false };
+  return request<{ enabled: boolean }>("/api/checkout/config");
+}
+
+export async function createCheckoutSession(input: {
+  items: CheckoutItemInput[];
+  fulfillment: "ship" | "pickup";
+  email: string;
+}): Promise<{ url: string }> {
+  if (!isLive) {
+    throw new ApiError(
+      "Card payments are being switched on — call 844-NYC-JOLT or visit the shop to complete this order.",
+      503,
+    );
+  }
+  return request<{ url: string }>("/api/checkout/session", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function getAdminSubmissions(token: string): Promise<AdminSubmissions> {
+  if (!isLive) {
+    throw new ApiError("The live admin service is not configured.", 503);
+  }
+  return request<AdminSubmissions>("/api/admin/submissions", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }

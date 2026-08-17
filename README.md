@@ -117,6 +117,10 @@ serverless function on Vercel, backed by Neon Postgres.
 | `GET` | `/api/repairs/:repairNumber` | Look up one repair (404 if unknown) |
 | `POST` | `/api/appointments` | Create a booking, returns a confirmation code |
 | `GET` | `/api/appointments/:confirmation` | Retrieve a booking |
+| `POST` | `/api/contact` | Store a contact message |
+| `GET` | `/api/checkout/config` | Check whether hosted card payments are configured |
+| `POST` | `/api/checkout/session` | Create a server-priced Stripe Checkout Session |
+| `GET` | `/api/admin/submissions` | Owner-only contact messages, bookings, and repairs |
 
 ### How the client chooses a data source
 
@@ -154,6 +158,30 @@ npm run dev                  # Express + Vite on http://localhost:5000
 ```
 
 `.env.local` is gitignored. Never commit a connection string.
+
+### Payments, submissions, and owner access
+
+Set these **Vercel Project → Settings → Environment Variables** for Production
+(and Preview if desired). Re-deploy the API after saving them:
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Neon Postgres connection used for appointments and contact messages. |
+| `STRIPE_SECRET_KEY` | Yes for cards | Stripe secret key used only by the API to create hosted Checkout sessions. |
+| `ADMIN_TOKEN` | Yes for `/#/admin` | A long, randomly generated token required by the private submissions page. |
+| `RESEND_API_KEY` | Optional | Enables owner notification emails for new contact messages and appointments. |
+| `RESEND_FROM` | Optional | Verified Resend sender, e.g. `Jolt Revive <orders@joltrevive.com>`; falls back to `onboarding@resend.dev` for testing. |
+| `ALLOWED_ORIGINS` | Optional | Additional comma-separated browser origins allowed to call the API. |
+
+Also set `VITE_API_BASE_URL` as a **GitHub repository Actions variable** to the
+API origin (for example, `https://api.joltrevive.com`) and re-run the Pages
+workflow. Without it, GitHub Pages remains a static storefront and card
+payments, contact delivery, and online bookings are intentionally unavailable
+rather than simulated.
+
+With `ADMIN_TOKEN` set, visit `https://www.joltrevive.com/#/admin` and enter
+the token to read submissions. The route is deliberately excluded from site
+navigation and indexing.
 
 ## Project structure
 
